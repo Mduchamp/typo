@@ -1,6 +1,7 @@
 config/mail.yml
 *.log
 *~
+Gemfile.lock
 db/*.sqlite*
 db/schema.rb
 .*.swp
@@ -10,8 +11,8 @@ db/schema.rb
 installer/rails_installer.yml
 #/public/files
 #/public/images/theme
-#/public/javascripts/ckeditor/config.js
-#/public/javascripts/ckeditor/config.bak
+/public/javascripts/ckeditor/config.js
+/public/javascripts/ckeditor/config.bak
 /public/javascripts/all.js
 /public/robots.txt
 #/public/stylesheets/theme
