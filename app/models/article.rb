@@ -466,4 +466,25 @@ class Article < Content
     to = to - 1 # pull off 1 second so we don't overlap onto the next day
     return from..to
   end
+
+  def merge_with(other_article)
+    return nil unless other_article.is_a("Article")
+    merge_bodies(other_article)
+    merge_resources(other_article.comments)
+    merge_resources(other_article.resources)
+    other_article.save
+    self.save
+    other_article.destroy
+    return self
+  end
+
+  def merge_resources(resources)
+    resources.each do |resource|
+      resource.article_id = self.id
+    end
+  end
+
+  def merge_bodies(other_article)
+    self.body << other_article.body
+  end
 end
