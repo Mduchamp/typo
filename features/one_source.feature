@@ -7,14 +7,14 @@ Background:
   And the following article exists: title: "two", author: "notme", text: "bye"
 
 Scenario: Merge articles
-  Given I am on the edit page for "one"
+  Given I am at the edit page for the article "one"
   And I merge it with "two"
-  Then the following article should exist: title: "one", author: "me", text: "hi bye"
+  Then I should see the following article: title: "one", author: "me", text: "hi bye"
 
 Scenario: Merge Comments
   Given "one" has the following comments: "hello"
   And given "two" has the following comments: "goodbye"
-  And given I am on the edit page for "two"
+  And given I am at the edit page for the article "two"
   And I merge it with "one"
   Then the following article should exist: title: "two", author: "notme", text: "bye hi"
   And "two" should have the following comments: "hello", "goodbye"
