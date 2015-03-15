@@ -468,23 +468,40 @@ class Article < Content
   end
 
   def merge_with(other_article)
-    return nil unless other_article.is_a("Article")
+    return nil unless other_article.is_a? Article
+    return self if id == other_article.id
+
     merge_bodies(other_article)
-    merge_resources(other_article.comments)
-    merge_resources(other_article.resources)
+    merge_comments(other_article)
+    merge_resources(other_article)
+
     other_article.save
     self.save
+    #ActiveSupport::Dependencies::Reference.clear!
     other_article.destroy
     return self
   end
 
-  def merge_resources(resources)
-    resources.each do |resource|
+  def merge_comments(other_article)
+    other_article.feedback.each do |comment|
+      comment.article_id = self.id
+      comment.save
+    end
+  end
+
+  def merge_resources(other_article)
+    other_article.resources.each do |resource|
       resource.article_id = self.id
+      resource.save
     end
   end
 
   def merge_bodies(other_article)
-    self.body << other_article.body
+    if self.body != nil
+      self.body += other_article.body
+    else
+      self.body = other_article.body
+    end
   end
+
 end

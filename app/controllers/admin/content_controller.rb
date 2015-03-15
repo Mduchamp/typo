@@ -6,6 +6,40 @@ class Admin::ContentController < Admin::BaseController
 
   cache_sweeper :blog_sweeper
 
+  def merge_articles
+
+    if (params[:id] == params[:other_article])
+      redirect_to :action => 'edit', :id => params[:id]
+      flash[:error] = _("Error, cannot merge with itself")
+      return
+    end
+
+    begin
+      @article = Article.find(params[:id])
+      other_article = Article.find(params[:other_article])
+    rescue
+      if (@article == nil)
+        redirect_to :action => 'index'
+      else
+        redirect_to :action => 'edit', :id => params[:id]
+      end
+      flash[:error] = _("Error, one of the articles does not exist")
+      return
+    end
+
+    
+    #!!!TODO check if it's an admin or not
+    unless current_user.admin?
+      redirect_to :action => 'edit', :id => params[:id] 
+      flash[:error] = _("Error, you are not allowed to perform this action")
+      return
+    end
+
+    @article.merge_with(other_article)
+    flash[:notice] = _("Articles are merged successfully")
+    redirect_to :action => 'edit', :id => params[:id]
+  end
+
   def auto_complete_for_article_keywords
     @items = Tag.find_with_char params[:article][:keywords].strip
     render :inline => "<%= raw auto_complete_result @items, 'name' %>"
@@ -22,6 +56,7 @@ class Admin::ContentController < Admin::BaseController
       @article = Article.new(params[:article])
     end
   end
+
 
   def new
     new_or_edit
@@ -240,4 +275,5 @@ class Admin::ContentController < Admin::BaseController
   def setup_resources
     @resources = Resource.by_created_at
   end
+
 end
