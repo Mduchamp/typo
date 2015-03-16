@@ -3,10 +3,10 @@
 <%= render "admin/shared/edit", { :form_type => "article", :form_action => { :action => "new", :id => @article.id , :class => ('autosave')} } %>
 
 <div class=''>
-	<h4>Merge articles</h4>
-	<%= "<form action='/merge_articles/#{@article.id}' method='POST'>" %>
-		<label for="other_article">Merge with:&nbsp;&nbsp;</label>
-		<input type="text" name="other_article" value="" id="article_to_merge_with">
-		<input type="submit" value="Merge!">
-	</form>
+  <h4>Merge articles</h4>
+  <%= "<form action='/merge_articles/#{@article.id}' method='POST'>" %>
+    <label for="other_article">Merge with:&nbsp;&nbsp;</label>
+    <input type="text" name="merge_with" value="" id="article_to_merge_with">
+    <input type="submit" value="Merge!">
+  </form>
 </div>

@@ -8,7 +8,7 @@ class Admin::ContentController < Admin::BaseController
 
   def merge_articles
 
-    if (params[:id] == params[:other_article])
+    if (params[:id] == params[:merge_with])
       redirect_to :action => 'edit', :id => params[:id]
       flash[:error] = _("Error, cannot merge with itself")
       return
@@ -16,7 +16,7 @@ class Admin::ContentController < Admin::BaseController
 
     begin
       @article = Article.find(params[:id])
-      other_article = Article.find(params[:other_article])
+      other_article = Article.find(params[:merge_with])
     rescue
       if (@article == nil)
         redirect_to :action => 'index'
@@ -27,15 +27,15 @@ class Admin::ContentController < Admin::BaseController
       return
     end
 
-    
+
     #!!!TODO check if it's an admin or not
     unless current_user.admin?
-      redirect_to :action => 'edit', :id => params[:id] 
+      redirect_to :action => 'edit', :id => params[:id]
       flash[:error] = _("Error, you are not allowed to perform this action")
       return
     end
 
-    @article.merge_with(other_article)
+    @article.merge(other_article)
     flash[:notice] = _("Articles are merged successfully")
     redirect_to :action => 'edit', :id => params[:id]
   end
@@ -47,7 +47,7 @@ class Admin::ContentController < Admin::BaseController
 
   def index
     @search = params[:search] ? params[:search] : {}
-    
+
     @articles = Article.search_with_pagination(@search, {:page => params[:page], :per_page => this_blog.admin_display_elements})
 
     if request.xhr?
@@ -79,7 +79,7 @@ class Admin::ContentController < Admin::BaseController
       flash[:error] = _("Error, you are not allowed to perform this action")
       return(redirect_to :action => 'index')
     end
-    
+
     return(render 'admin/shared/destroy') unless request.post?
 
     @record.destroy
@@ -112,7 +112,7 @@ class Admin::ContentController < Admin::BaseController
 
   def attachment_save(attachment)
     begin
-      Resource.create(:filename => attachment.original_filename, :mime => attachment.content_type.chomp, 
+      Resource.create(:filename => attachment.original_filename, :mime => attachment.content_type.chomp,
                       :created_at => Time.now).write_to_disk(attachment)
     rescue => e
       logger.info(e.message)
@@ -127,7 +127,7 @@ class Admin::ContentController < Admin::BaseController
     @article.text_filter = current_user.text_filter if current_user.simple_editor?
 
     get_fresh_or_existing_draft_for_article
-    
+
     @article.attributes = params[:article]
     @article.published = false
     set_article_author
@@ -194,13 +194,13 @@ class Admin::ContentController < Admin::BaseController
     @article.keywords = Tag.collection_to_string @article.tags
     @article.attributes = params[:article]
     # TODO: Consider refactoring, because double rescue looks... weird.
-        
+
     @article.published_at = DateTime.strptime(params[:article][:published_at], "%B %e, %Y %I:%M %p GMT%z").utc rescue Time.parse(params[:article][:published_at]).utc rescue nil
 
     if request.post?
       set_article_author
       save_attachments
-      
+
       @article.state = "draft" if @article.draft
 
       if @article.save
